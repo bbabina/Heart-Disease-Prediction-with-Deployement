@@ -42,10 +42,17 @@ def predict():
             'ST_Slope': [st_slope_map[st_slope]],
             }
     df = pd.DataFrame(data)
+    df['Zero_Cholesterol'] = df['Cholesterol'] == 0
+    df['Zero_RestingBP'] = df['RestingBP'] == 0
+
+    df['Cholesterol']=df['Cholesterol'].replace(0,np.nan)
+    df['RestingBP']=df['RestingBP'].replace(0,np.nan)
 
     model = joblib.load("model.pkl")
     pipeline = joblib.load("pipeline.pkl")
-    Y_pred = model.predict(pipeline.transform(df))[0]
+
+    threshold = 0.2
+    Y_pred = (model.predict_proba(pipeline.transform(df))[0])[1] > threshold
 
     return render_template("predict.html", my_prediction = Y_pred)
 
